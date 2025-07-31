@@ -13,16 +13,16 @@ jobs:
       ANDROID_HOME: ${{ github.workspace }}/android-sdk
 
     steps:
-    - name: Checkout code
+    - name: Checkout project
       uses: actions/checkout@v4
 
-    - name: Install dependencies
+    - name: Install system dependencies
       run: |
         sudo apt update
-        sudo apt install -y zip unzip wget build-essential openjdk-11-jdk python3-pip
+        sudo apt install -y wget unzip zip openjdk-11-jdk build-essential python3-pip
         pip3 install buildozer cython
 
-    - name: Download and set up Android SDK
+    - name: Download Android SDK command-line tools
       run: |
         mkdir -p $ANDROID_HOME/cmdline-tools
         cd $ANDROID_HOME
@@ -30,15 +30,15 @@ jobs:
         unzip sdk-tools.zip -d cmdline-tools
         mv cmdline-tools/cmdline-tools cmdline-tools/latest
 
-    - name: Add SDK to PATH
+    - name: Set SDK paths
       run: |
         echo "ANDROID_HOME=${{ github.workspace }}/android-sdk" >> $GITHUB_ENV
-        echo "PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH" >> $GITHUB_ENV
+        echo "PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/36.0.0:$PATH" >> $GITHUB_ENV
 
-    - name: Accept licenses & install required SDK packages
+    - name: Install SDK packages and accept licenses
       run: |
-        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;36.0.0"
         yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_HOME --licenses
+        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;36.0.0"
 
-    - name: Build APK
+    - name: Build APK with Buildozer
       run: buildozer android debug
