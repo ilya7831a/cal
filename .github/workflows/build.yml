@@ -10,31 +10,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+    - name: Checkout repo
+      uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y zip unzip python3-pip build-essential openjdk-11-jdk
-          pip3 install buildozer cython
+    - name: Install Python & Buildozer
+      run: |
+        sudo apt update
+        sudo apt install -y zip unzip python3-pip build-essential openjdk-11-jdk wget
+        pip3 install buildozer cython
 
-      - name: Accept SDK licenses
-        run: yes | sdkmanager --licenses
+    - name: Install Android SDK Command Line Tools
+      run: |
+        mkdir -p $HOME/android-sdk/cmdline-tools
+        cd $HOME/android-sdk
+        wget https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip -O tools.zip
+        unzip tools.zip -d cmdline-tools
+        mv cmdline-tools/cmdline-tools cmdline-tools/latest
 
-      - name: Download SDK tools
-        run: |
-          mkdir -p $HOME/android-sdk
-          cd $HOME/android-sdk
-          wget https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip
-          unzip commandlinetools-linux-8512546_latest.zip
-          mkdir -p cmdline-tools/latest
-          mv cmdline-tools/* cmdline-tools/latest/
-          export ANDROID_HOME=$HOME/android-sdk
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
-          export PATH=$ANDROID_HOME/platform-tools:$PATH
-          sdkmanager "platform-tools" "platforms;android-33" "build-tools;36.0.0"
+    - name: Set environment variables
+      run: |
+        echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+        echo "PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH" >> $GITHUB_ENV
 
-      - name: Build APK
-        run: |
-          buildozer android debug
+    - name: Accept licenses and install SDK packages
+      run: |
+        yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
+        $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;36.0.0"
+
+    - name: Build APK
+      run: buildozer android debug
