@@ -1,0 +1,25 @@
+<MyCalculator>:
+    orientation: 'vertical'
+    spacing: 10
+    padding: 20
+
+    TextInput:
+        id: input
+        multiline: False
+        hint_text: "e.g. 4 + 5 than press = Button"
+        font_size: 24
+
+    Label:
+        id: output
+        font_size: 24
+        text: ""
+
+    Button:
+        text: "="
+        font_size: 24
+        on_press: root.calculate()
+
+    Button:
+        text: "clear"
+        font_size: 24
+        on_press: root.clear()
